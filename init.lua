@@ -29,33 +29,31 @@ let g:slime_target = 'tmux'
 let g:slime_default_config = {"socket_name": "default", "target_pane": "{right-of}"}
 let g:slime_dont_ask_default = 1
 
-"------------------------------------------------------------------------------
-" julia-cell configuration
-"------------------------------------------------------------------------------
-" Use '##' tags to define cells
-let g:julia_cell_delimit_cells_by = 'tags'
 
-" map <Leader>jr to run entire file
-nnoremap <Leader>jr :JuliaCellRun<CR>
+" Run cell for vim-slime
+function! SendCell(pattern)
+    let start_line = search(a:pattern, 'bnW')
 
-" map <Leader>jc to execute the current cell
-nnoremap <Leader>jc :JuliaCellExecuteCell<CR>
+    if start_line
+        let start_line = start_line + 1
+    else
+        let start_line = 1
+    endif
 
-" map <Leader>jC to execute the current cell and jump to the next cell
-nnoremap <Leader>jC :JuliaCellExecuteCellJump<CR>
+    let stop_line = search(a:pattern, 'nW')
+    if stop_line
+        let stop_line = stop_line - 1
+    else
+        let stop_line = line('$')
+    endif
 
-" map <Leader>jl to clear Julia screen
-nnoremap <Leader>jl :JuliaCellClear<CR>
+    call slime#send_range(start_line, stop_line)
+endfunction
 
-" map <Leader>jp and <Leader>jn to jump to the previous and next cell header
-nnoremap <Leader>jp :JuliaCellPrevCell<CR>
-nnoremap <Leader>jn :JuliaCellNextCell<CR>
-
-" map <Leader>je to execute the current line or current selection
-nmap <Leader>je <Plug>SlimeLineSend
-xmap <Leader>je <Plug>SlimeRegionSend
-
-" map <F5> to save and run script
-nnoremap <F5> :w<CR>:JuliaCellRun<CR>
+" Custom vim-slime mappings
+let g:slime_no_mappings = 1
+xmap <c-c><c-x> <Plug>SlimeRegionSendj
+nmap <c-c><c-x> <Plug>SlimeLineSendj
+nmap <c-c><c-c> :<c-u>call SendCell('^##')<cr>
 
 ]]
